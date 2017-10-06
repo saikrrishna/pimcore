@@ -53,16 +53,12 @@ while (($row = fgetcsv($handle)) !== FALSE) {
             $product->setOrderType('Pallet');
             $productTagObj = new Product\ProductTags($product);
             $tagObj = new Objectbrick\Data\FloorMoldingsTags($product);
-//            $categoryDataObjFieldDef = $tagObj->getDefinition()->getFieldDefinitions();
-
             $tagObj->setProductTags(explode("|", $tagSetter));
             $tagObj->setImageTagFlag('tagStyle');
             $productTagObj->setFloorMoldingsTags($tagObj);
             $product->setProductTags($productTagObj);
             $product->save();
             $plids[$product->getName()] = $product->getId();
-            var_dump($plids);
-
             echo "saved" . "</br>";
             echo $product->getId() . "</br>";
         } catch (Exception $e) {
@@ -71,10 +67,9 @@ while (($row = fgetcsv($handle)) !== FALSE) {
             echo "error:" . $e->getTraceAsString();
         }
     }
-
-    
     $i++;
 }
+ var_dump($plids);
 fclose($handle);
 $fileName = "file.csv";
 $fp = fopen($fileName, 'w');
@@ -82,16 +77,4 @@ foreach ($plids as $key => $value) {
     fputcsv($fp, [$key, $value]);
 }
 fclose($fp);
-//
-//$sku = Product::getBySkuNumnber(10106301);
-//$parent = $sku->getParent();
-//$parId = $sku->getParentId();
-//echo $parent . "</br>";
-//echo $parId . "</br>";
-//$sku->getProductTags()->delete($sku);
-//$sku->getCategoryData()->delete($sku);
-//$sku->setParentId($product->getId());
-//$sku->setParent($product);
-//$sku->save();
-//echo "saved";
 exit(0);
