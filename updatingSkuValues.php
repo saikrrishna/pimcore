@@ -9,7 +9,7 @@ require_once (dirname(__FILE__) . "/pimcore/cli/startup.php");
 set_time_limit(0);
 memory_get_usage();
 error_reporting(E_Warning);
-$inputFileName = "C:\\Users\\Saikrrishna\\Desktop\\CreatingNewProducts.xlsx";
+$inputFileName = "CreatingNewProducts.xlsx";
 $phpExcelObject = PHPExcel_IOFactory::load($inputFileName);
 $worksheets = $phpExcelObject->getAllSheets();
 $columnIndexKeyMap = array();
