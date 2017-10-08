@@ -9,7 +9,7 @@ require_once (dirname(__FILE__) . "/pimcore/cli/startup.php");
 set_time_limit(0);
 memory_get_usage();
 error_reporting(E_Warning);
-$inputFileName = "C:\\Users\\Saikrrishna\\Desktop\\CreatingNewProducts.xlsx";
+$inputFileName = "CreatingNewProducts.xlsx";
 $phpExcelObject = PHPExcel_IOFactory::load($inputFileName);
 $worksheets = $phpExcelObject->getAllSheets();
 $columnIndexKeyMap = array();
@@ -40,7 +40,7 @@ foreach ($worksheets as $worksheet) {
                     echo "Column: " . $newParent . '</br>';
                     $newParentId = Product::getById($newParent);
                     $skuNumber = Product::getBySkuNumnber($headSKU);
-//                    $dp = new Product();
+                    $dp = new Product();
                     $parent = $skuNumber->getParent();
                     $parentId = $skuNumber->getParentId();
                     echo "\n<br/>Old Parent Name: " . $parent . "\n<br/>";
@@ -48,51 +48,50 @@ foreach ($worksheets as $worksheet) {
 //                            die(0);
                     $skuNumber->getProductTags()->delete($skuNumber);
                     $skuNumber->getCategoryData()->delete($skuNumber);
-                    $skuNumber->setBrand(null);
-                    $skuNumber->setSupplier(null);
-                    $skuNumber->setPrimaryCategory(null);
+                    $skuNumber->setBrand($dp->getBrand());
+                    $skuNumber->setSupplier($dp->getSupplier());
+                    $skuNumber->setPrimaryCategory($dp->getPrimaryCategory());
                     $skuNumber->setParentId($newParent);
                     $skuNumber->setParent($newParentId);
-                    foreach ($columnIndexKeyMap as $column => $headKey) {
-                        if ($column == 0 || $column == 1) {
+//                foreach ($columnIndexKeyMap as $column => $headKey) {
+//                    if ($column == 0 || $column == 1) {
 //                            echo "SAve call";
 //                            $skuNumber->save();
 //                            echo "saved";
-                            $currentCategoryHref = $skuNumber->getPrimaryCategory();
-                            $currentCategoryObj = $currentCategoryHref[0]->getObject();
-                            $categoryId = $currentCategoryObj->getId();
+                    $currentCategoryHref = $skuNumber->getPrimaryCategory();
+                    $currentCategoryObj = $currentCategoryHref[0]->getObject();
+                    $categoryId = $currentCategoryObj->getId();
 //                            var_dump($categoryId);
 //                            die(0);
-                            $category = ProductCategory::getById($categoryId);
-                            $objectBrickKey = $category->getProperty("objectBrick");
-                            $categoryDataBrickClass = "Object\Objectbrick\Data" . "\\" . ucfirst($objectBrickKey);
+                    $category = ProductCategory::getById($categoryId);
+                    $objectBrickKey = $category->getProperty("objectBrick");
+                    $categoryDataBrickClass = "Object\Objectbrick\Data" . "\\" . ucfirst($objectBrickKey);
 
-                            if (class_exists($categoryDataBrickClass)) {
-                                $categoryDataObj = new $categoryDataBrickClass(new Product());
-                            }
-                            $categoryDataObjFieldDef = $categoryDataObj->getDefinition()->getFieldDefinitions();
-                            $brickName = "get" . ucfirst($objectBrickKey);
+                    if (class_exists($categoryDataBrickClass)) {
+                        $categoryDataObj = new $categoryDataBrickClass(new Product());
+                    }
+                    $categoryDataObjFieldDef = $categoryDataObj->getDefinition()->getFieldDefinitions();
+                    $brickName = "get" . ucfirst($objectBrickKey);
 
-                            $cat = $skuNumber->getCategoryData()->$brickName(); //                        }
-                            for ($columns = 2; $columns < $highestColumn; $columns++) {
-                                $attr = $columnIndexKeyMap[$columns];
-                                $fieldDef = $categoryDataObjFieldDef[$attr];
-                                $setter = "set" . ucfirst($attr);
-                                echo $setter . "</br>";
-                                if (method_exists($cat, $setter)) {
-                                    $values = $worksheet->getCellByColumnAndRow($columns, $row)->getValue();
-                                    if ($fieldDef->getFieldType() == 'multiselect') {
-                                        $cat->$setter(explode("|", $values));
-                                    } else {
-                                        $cat->$setter($values);
-                                    }
-                                    echo ($values) . "\n</br>";
-                                }
+                    $cat = $skuNumber->getCategoryData()->$brickName(); //                        }
+                    for ($columns = 2; $columns < $highestColumn; $columns++) {
+                        $attr = $columnIndexKeyMap[$columns];
+                        $fieldDef = $categoryDataObjFieldDef[$attr];
+                        $setter = "set" . ucfirst($attr);
+                        if (method_exists($cat, $setter)) {
+                            $values = $worksheet->getCellByColumnAndRow($columns, $row)->getValue();
+                            if ($fieldDef->getFieldType() == 'multiselect') {
+                                $cat->$setter(explode("|", $values));
+                            } else {
+                                $cat->$setter($values);
                             }
-                            $skuNumber->save();
-                            echo "saved" . $headSKU . "\n<BR>";
+                            echo ($values) . "\n</br>";
                         }
                     }
+//                    }
+                    $skuNumber->save();
+                    echo "saved" . $headSKU . "\n<BR>";
+//                    }
                 }
             } catch (\Exception $e) {
                 echo "Exception - " . $headSKU . "-" . $e->getMessage() . "\n<br/>";
