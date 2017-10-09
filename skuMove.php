@@ -2,6 +2,7 @@
 
 namespace BuildDirectService;
 
+use BuildDirect\Tool;
 use Pimcore\Model\Object\Product;
 use Pimcore\Model\Object\ProductCategory;
 use Pimcore\Model\Object\Data\ObjectMetadata;
@@ -11,6 +12,7 @@ use Pimcore\Model\Object\AbstractObject;
 use Pimcore\Model\Object\Supplier;
 use Pimcore\Model\Object\ProductBrand;
 use Pimcore\Model\Object\Objectbrick;
+use Pimcore\Model\User;
 
 ?>
 <?php
@@ -19,7 +21,17 @@ require_once (dirname(__FILE__) . "/pimcore/cli/startup.php");
 error_reporting(E_Warning);
 $start_row = 1; // define start row
 $i = 1;
+if ($argv != null && !Tool::isEmpty($argv)) {
+	$userId = $argv[1];
+	$whIdToAdd = $argv[2];
+} else {
+	echo "\nPass User ID as Argument";
+	exit(0);
+}
 $handle = fopen(PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . 'utils' . DIRECTORY_SEPARATOR . 'skuPLines.csv', "r");
+$emailAddresses = [];
+$user = User::getById($userId);
+$emailAddresses[] = $user->getEmail();
 $plids = array();
 while (($row = fgetcsv($handle)) !== FALSE) {
     if ($i >= $start_row) {
@@ -77,4 +89,5 @@ foreach ($plids as $key => $value) {
     fputcsv($fp, [$key, $value]);
 }
 fclose($fp);
+Tool::sendEmail($emailAddresses, "Product Line Creation", $fileName);
 exit(0);
