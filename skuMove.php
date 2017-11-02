@@ -22,16 +22,16 @@ error_reporting(E_Warning);
 $start_row = 1; // define start row
 $i = 1;
 if ($argv != null && !Tool::isEmpty($argv)) {
-	$userId = $argv[1];
-	$whIdToAdd = $argv[2];
+    $userId = $argv[1];
 } else {
-	echo "\nPass User ID as Argument";
-	exit(0);
+    echo "\nPass User ID as Argument";
+    exit(0);
 }
 $handle = fopen(PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . 'utils' . DIRECTORY_SEPARATOR . 'skuPLines.csv', "r");
 $emailAddresses = [];
 $user = User::getById($userId);
 $emailAddresses[] = $user->getEmail();
+$userName = $user->getUserName();
 $plids = array();
 while (($row = fgetcsv($handle)) !== FALSE) {
     if ($i >= $start_row) {
@@ -42,9 +42,9 @@ while (($row = fgetcsv($handle)) !== FALSE) {
         $productType = $row[3];
         $tagSetter = $row[4];
         try {
-            
+
             $product = new Product();
-            $product->setParentId(161244);
+            $product->setParentId(533957);
             $product->setName($collectionName);
             $product->setWebname($collectionName);
             $product->setType(AbstractObject::OBJECT_TYPE_OBJECT);
@@ -81,13 +81,20 @@ while (($row = fgetcsv($handle)) !== FALSE) {
     }
     $i++;
 }
- var_dump($plids);
+var_dump($plids);
 fclose($handle);
-$fileName = "file.csv";
-$fp = fopen($fileName, 'w');
+$file = "ProductLine";
+//$filepath = pathinfo($filename);
+$date1 = time();
+$filename = PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . "import-export" . DIRECTORY_SEPARATOR . "utility" . DIRECTORY_SEPARATOR . $userName . "_" . $date1 . "_" . $file . ".csv";
+
+$fp = fopen($filename, 'w');
 foreach ($plids as $key => $value) {
     fputcsv($fp, [$key, $value]);
 }
 fclose($fp);
-Tool::sendEmail($emailAddresses, "Product Line Creation", $fileName);
-exit(0);
+echo $filename;
+//Tool::sendEmail($emailAddresses, "Product Line Creation", $fileName, $filename);
+Tool::sendEmail(array(
+    $emailAddresses), "Product Line Creation", "Hello  " . ucfirst($userName) . " , <br/> You have an  'Export' oF 'Product Line Creation'. <br/><br/>File Path in System : " . $filename, $filename);
+?>
