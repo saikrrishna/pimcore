@@ -11,6 +11,7 @@ require_once (dirname(__FILE__) . "/pimcore/cli/startup.php");
 set_time_limit(0);
 memory_get_usage();
 error_reporting(E_Warning);
+<<<<<<< HEAD
 if ($argv != null && !Tool::isEmpty($argv)) {
     $userId = $argv[1];
 } else {
@@ -21,6 +22,9 @@ $inputFileName = "C:\\Users\\Saikrrishna\\Desktop\\CreatingNewProducts1111.xlsx"
 \Zend_Session::$_unitTestEnabled = true;
 $user = User::getById($userId);
 $userName = $user->getUserName();
+=======
+$inputFileName = "C:\\Users\\Saikrrishna\\Desktop\\CreatingNewProducts.xlsx";
+>>>>>>> ca9a7eb99f6fce3212cf74e9e699f6fc3096bb11
 $phpExcelObject = PHPExcel_IOFactory::load($inputFileName);
 $worksheets = $phpExcelObject->getAllSheets();
 $columnIndexKeyMap = array();
@@ -53,6 +57,7 @@ foreach ($worksheets as $worksheet) {
                     echo "New Parent: " . $newParent . '</br>';
                     $newParentId = Product::getById($newParent);
                     $skuNumber = Product::getBySkuNumnber($headSKU);
+<<<<<<< HEAD
                     if (!Tool::isEmpty($skuNumber) && intval($skuNumber)) {
                         $dp = new Product();
                         $parent = $skuNumber->getParent();
@@ -95,6 +100,59 @@ foreach ($worksheets as $worksheet) {
                                 }
                                 echo ($values) . "\n</br>";
                             }
+=======
+//                    $dp = new Product();
+                    $parent = $skuNumber->getParent();
+                    $parentId = $skuNumber->getParentId();
+                    echo "\n<br/>Old Parent Name: " . $parent . "\n<br/>";
+                    echo "\n<br/>Old Parent Id: " . $parentId . "\n<br/>";
+//                            die(0);
+                    $skuNumber->getProductTags()->delete($skuNumber);
+                    $skuNumber->getCategoryData()->delete($skuNumber);
+                    $skuNumber->setBrand(null);
+                    $skuNumber->setSupplier(null);
+                    $skuNumber->setPrimaryCategory(null);
+                    $skuNumber->setParentId($newParent);
+                    $skuNumber->setParent($newParentId);
+                    foreach ($columnIndexKeyMap as $column => $headKey) {
+                        if ($column == 0 || $column == 1) {
+//                            echo "SAve call";
+//                            $skuNumber->save();
+//                            echo "saved";
+                            $currentCategoryHref = $skuNumber->getPrimaryCategory();
+                            $currentCategoryObj = $currentCategoryHref[0]->getObject();
+                            $categoryId = $currentCategoryObj->getId();
+//                            var_dump($categoryId);
+//                            die(0);
+                            $category = ProductCategory::getById($categoryId);
+                            $objectBrickKey = $category->getProperty("objectBrick");
+                            $categoryDataBrickClass = "Object\Objectbrick\Data" . "\\" . ucfirst($objectBrickKey);
+
+                            if (class_exists($categoryDataBrickClass)) {
+                                $categoryDataObj = new $categoryDataBrickClass(new Product());
+                            }
+                            $categoryDataObjFieldDef = $categoryDataObj->getDefinition()->getFieldDefinitions();
+                            $brickName = "get" . ucfirst($objectBrickKey);
+
+                            $cat = $skuNumber->getCategoryData()->$brickName(); //                        }
+                            for ($columns = 2; $columns < $highestColumn; $columns++) {
+                                $attr = $columnIndexKeyMap[$columns];
+                                $fieldDef = $categoryDataObjFieldDef[$attr];
+                                $setter = "set" . ucfirst($attr);
+                                echo $setter . "</br>";
+                                if (method_exists($cat, $setter)) {
+                                    $values = $worksheet->getCellByColumnAndRow($columns, $row)->getValue();
+                                    if ($fieldDef->getFieldType() == 'multiselect') {
+                                        $cat->$setter(explode("|", $values));
+                                    } else {
+                                        $cat->$setter($values);
+                                    }
+                                    echo ($values) . "\n</br>";
+                                }
+                            }
+                            $skuNumber->save();
+                            echo "saved" . $headSKU . "\n<BR>";
+>>>>>>> ca9a7eb99f6fce3212cf74e9e699f6fc3096bb11
                         }
                         $setter = "set" . ucfirst($objectBrickKey);
                         $cat->$setter($categoryDataObj);
